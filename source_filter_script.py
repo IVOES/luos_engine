@@ -54,6 +54,7 @@ if not visited_key in global_env:
 
 sources = ["+<*.c>",
            "+<../../../network/robus/src/*.c>",
+           "+<../../IO/src/*.c>",
            "+<../../profiles/state/*.c>",
            "+<../../profiles/motor/*.c>",
            "+<../../profiles/servo_motor/*.c>",
