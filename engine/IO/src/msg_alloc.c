@@ -49,8 +49,9 @@
 #include "msg_alloc.h"
 #include "luos_hal.h"
 #include "luos_utils.h"
-
 #include "context.h"
+
+#include <filter.h>
 
 /*******************************************************************************
  * Definitions
@@ -168,7 +169,7 @@ void MsgAlloc_Init(memory_stats_t *memory_stats)
     {
         mem_stat = memory_stats;
     }
-    Robus_MaskInit(); // Mask filter for service ID
+    Filter_IDMaskInit(); // Mask filter for service ID
     // Filter State
     ctx.filter_id    = 0;
     ctx.filter_state = true;

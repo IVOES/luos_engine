@@ -33,6 +33,31 @@ void Filter_Init(void)
 {
 }
 /******************************************************************************
+ * @brief Reset Masks
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Filter_IDMaskInit(void)
+{
+    ctx.IDShiftMask = 0;
+    for (uint16_t i = 0; i < ID_MASK_SIZE; i++)
+    {
+        ctx.IDMask[i] = 0;
+    }
+}
+/******************************************************************************
+ * @brief Reset Masks
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Filter_TopicMaskInit(void)
+{
+    for (uint16_t i = 0; i < TOPIC_MASK_SIZE; i++)
+    {
+        ctx.TopicMask[i] = 0;
+    }
+}   
+/******************************************************************************
  * @brief ID Mask calculation
  * @param ID and Number of service
  * @return None

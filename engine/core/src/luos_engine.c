@@ -1180,7 +1180,7 @@ void Luos_Run(void)
  ******************************************************************************/
 void Luos_SetID(service_t *service, uint16_t id)
 {
-    Robus_MaskInit();
+    Filter_IDMaskInit();
     // set id
     service->ll_service->id = 1;
     // change filter mask
