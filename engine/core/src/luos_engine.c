@@ -1218,9 +1218,9 @@ error_return_t Luos_TopicSubscribe(service_t *service, uint16_t topic)
 {
     if (service == 0)
     {
-        return Robus_TopicSubscribe(0, topic);
+        return Filter_TopicSubscribe(0, topic);
     }
-    return Robus_TopicSubscribe(service->ll_service, topic);
+    return Filter_TopicSubscribe(service->ll_service, topic);
 }
 /******************************************************************************
  * @brief Unsubscribe from a topic
@@ -1232,7 +1232,7 @@ error_return_t Luos_TopicUnsubscribe(service_t *service, uint16_t topic)
 {
     if (service == 0)
     {
-        return Robus_TopicUnsubscribe(0, topic);
+        return Filter_TopicUnsubscribe(0, topic);
     }
-    return Robus_TopicUnsubscribe(service->ll_service, topic);
+    return Filter_TopicUnsubscribe(service->ll_service, topic);
 }

@@ -14,8 +14,8 @@ void unittest_Topic_IsTopicSubscribed(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 1);
-        Robus_TopicSubscribe(default_sc.App_2.app->ll_service, 18);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 1);
+        Filter_TopicSubscribe(default_sc.App_2.app->ll_service, 18);
 
         TEST_ASSERT_TRUE(Topic_IsTopicSubscribed(default_sc.App_1.app->ll_service, 1));
         TEST_ASSERT_FALSE(Topic_IsTopicSubscribed(default_sc.App_2.app->ll_service, 1));

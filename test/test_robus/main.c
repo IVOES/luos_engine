@@ -59,7 +59,7 @@ void unittest_Filter_IDMaskCalculation()
     }
 }
 
-void unittest_Robus_TopicSubscribe(void)
+void unittest_Filter_TopicSubscribe(void)
 {
     NEW_TEST_CASE("Normal Add to node topic list");
     {
@@ -67,13 +67,13 @@ void unittest_Robus_TopicSubscribe(void)
         //  Init default scenario context
         Init_Context();
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x11, ctx.TopicMask[0]);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 6);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 6);
         TEST_ASSERT_EQUAL(0x51, ctx.TopicMask[0]);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 18);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 18);
         TEST_ASSERT_EQUAL(0x51, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
@@ -86,10 +86,10 @@ void unittest_Robus_TopicSubscribe(void)
 
         RESET_ASSERT();
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC);
         TEST_ASSERT_FALSE(IS_ASSERT());
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC + 1);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC + 1);
         TEST_ASSERT_TRUE(IS_ASSERT());
 
         RESET_ASSERT();
@@ -100,23 +100,23 @@ void unittest_Robus_TopicSubscribe(void)
         //  Init default scenario context
         Init_Context();
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
-        Robus_TopicSubscribe(default_sc.App_2.app->ll_service, 0);
+        Filter_TopicSubscribe(default_sc.App_2.app->ll_service, 0);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
-        Robus_TopicSubscribe(default_sc.App_3.app->ll_service, 0);
+        Filter_TopicSubscribe(default_sc.App_3.app->ll_service, 0);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x11, ctx.TopicMask[0]);
-        Robus_TopicSubscribe(default_sc.App_2.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_2.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x11, ctx.TopicMask[0]);
-        Robus_TopicSubscribe(default_sc.App_3.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_3.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x11, ctx.TopicMask[0]);
     }
 }
 
-void unittest_Robus_TopicUnsubscribe(void)
+void unittest_Filter_TopicUnsubscribe(void)
 {
     NEW_TEST_CASE("Remove from an empty list");
     {
@@ -124,7 +124,7 @@ void unittest_Robus_TopicUnsubscribe(void)
         //  Init default scenario context
         Init_Context();
 
-        error_return_t err = Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, 3);
+        error_return_t err = Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, 3);
         TEST_ASSERT_EQUAL(FAILED, err);
     }
     NEW_TEST_CASE("Normal Remove from topic list");
@@ -133,27 +133,27 @@ void unittest_Robus_TopicUnsubscribe(void)
         //  Init default scenario context
         Init_Context();
 
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 6);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 18);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 6);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 18);
 
         TEST_ASSERT_EQUAL(0x51, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, 4);
+        Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x41, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, 0);
+        Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, 0);
         TEST_ASSERT_EQUAL(0x40, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, 6);
+        Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, 6);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, 18);
+        Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, 18);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[2]);
@@ -163,13 +163,13 @@ void unittest_Robus_TopicUnsubscribe(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC - 1);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC - 1);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x08, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC - 1);
+        Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC - 1);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[2]);
-        error_return_t err = Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC);
+        error_return_t err = Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, LAST_TOPIC);
         TEST_ASSERT_EQUAL(err, FAILED);
     }
     NEW_TEST_CASE("Remove multiple times same topic");
@@ -177,43 +177,43 @@ void unittest_Robus_TopicUnsubscribe(void)
         Reset_Context();
         //  Init default scenario context
         Init_Context();
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
-        Robus_TopicSubscribe(default_sc.App_2.app->ll_service, 4);
-        Robus_TopicSubscribe(default_sc.App_3.app->ll_service, 4);
-        Robus_TopicSubscribe(default_sc.App_2.app->ll_service, 6);
-        Robus_TopicSubscribe(default_sc.App_3.app->ll_service, 6);
-        Robus_TopicSubscribe(default_sc.App_1.app->ll_service, 18);
-        Robus_TopicSubscribe(default_sc.App_2.app->ll_service, 18);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 0);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_2.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_3.app->ll_service, 4);
+        Filter_TopicSubscribe(default_sc.App_2.app->ll_service, 6);
+        Filter_TopicSubscribe(default_sc.App_3.app->ll_service, 6);
+        Filter_TopicSubscribe(default_sc.App_1.app->ll_service, 18);
+        Filter_TopicSubscribe(default_sc.App_2.app->ll_service, 18);
 
         TEST_ASSERT_EQUAL(0x51, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, 4);
+        Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x51, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_2.app->ll_service, 4);
+        Filter_TopicUnsubscribe(default_sc.App_2.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x51, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_3.app->ll_service, 4);
+        Filter_TopicUnsubscribe(default_sc.App_3.app->ll_service, 4);
         TEST_ASSERT_EQUAL(0x41, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_2.app->ll_service, 6);
+        Filter_TopicUnsubscribe(default_sc.App_2.app->ll_service, 6);
         TEST_ASSERT_EQUAL(0x41, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_3.app->ll_service, 6);
+        Filter_TopicUnsubscribe(default_sc.App_3.app->ll_service, 6);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_1.app->ll_service, 18);
+        Filter_TopicUnsubscribe(default_sc.App_1.app->ll_service, 18);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x04, ctx.TopicMask[2]);
-        Robus_TopicUnsubscribe(default_sc.App_2.app->ll_service, 18);
+        Filter_TopicUnsubscribe(default_sc.App_2.app->ll_service, 18);
         TEST_ASSERT_EQUAL(0x01, ctx.TopicMask[0]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[1]);
         TEST_ASSERT_EQUAL(0x00, ctx.TopicMask[2]);
@@ -227,8 +227,8 @@ int main(int argc, char **argv)
 
     // Big data reception
     UNIT_TEST_RUN(unittest_Filter_IDMaskCalculation);
-    UNIT_TEST_RUN(unittest_Robus_TopicSubscribe);
-    UNIT_TEST_RUN(unittest_Robus_TopicUnsubscribe);
+    UNIT_TEST_RUN(unittest_Filter_TopicSubscribe);
+    UNIT_TEST_RUN(unittest_Filter_TopicUnsubscribe);
 
     UNITY_END();
 }

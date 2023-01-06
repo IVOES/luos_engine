@@ -11,6 +11,7 @@
 #include "luos_hal.h"
 #include "context.h"
 #include "luos_utils.h"
+#include "topic.h"
 
 /*******************************************************************************
  * Definitions
@@ -56,7 +57,7 @@ void Filter_TopicMaskInit(void)
     {
         ctx.TopicMask[i] = 0;
     }
-}   
+}
 /******************************************************************************
  * @brief ID Mask calculation
  * @param ID and Number of service
@@ -224,4 +225,57 @@ _WEAKED luos_localhost_t Filter_MsgConcerned(header_t *header)
             break;
     }
     return EXTERNALHOST;
+}
+/******************************************************************************
+ * @brief Add new mutlicast topic to service bank and node mask
+ * @param ll_service
+ * @param topic
+ * @return Error
+ ******************************************************************************/
+error_return_t Filter_TopicSubscribe(ll_service_t *ll_service, uint16_t topic_id)
+{
+    // assert if we add a topic that is greater than the max topic value
+    LUOS_ASSERT(topic_id <= LAST_TOPIC);
+    // add 1 to the bit corresponding to the topic in multicast mask
+    ctx.TopicMask[(topic_id / 8)] |= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
+    // add multicast topic to service
+    if (ll_service == 0)
+    {
+        return Topic_Subscribe((ll_service_t *)(&ctx.ll_service_table[0]), topic_id);
+    }
+    return Topic_Subscribe(ll_service, topic_id);
+}
+/******************************************************************************
+ * @brief Remove mutlicast topic to service bank and node mask
+ * @param ll_service
+ * @param topic
+ * @return Error
+ ******************************************************************************/
+error_return_t Filter_TopicUnsubscribe(ll_service_t *ll_service, uint16_t topic_id)
+{
+    error_return_t err;
+
+    // delete topic from service list
+    if (ll_service == 0)
+    {
+        err = Topic_Unsubscribe((ll_service_t *)(&ctx.ll_service_table[0]), topic_id);
+    }
+    else
+    {
+        err = Topic_Unsubscribe(ll_service, topic_id);
+    }
+
+    if (err == SUCCEED)
+    {
+        for (uint16_t i = 0; i < ctx.ll_service_number; i++)
+        {
+            if (Topic_IsTopicSubscribed((ll_service_t *)(&ctx.ll_service_table[i]), topic_id) == true)
+            {
+                return err;
+            }
+        }
+        // calculate mask after topic deletion
+        ctx.TopicMask[(topic_id / 8)] -= 1 << (topic_id - ((int)(topic_id / 8)) * 8);
+    }
+    return err;
 }
