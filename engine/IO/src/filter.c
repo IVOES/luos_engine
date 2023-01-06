@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include "luos_hal.h"
 #include "context.h"
+#include "luos_utils.h"
 
 /*******************************************************************************
  * Definitions
@@ -30,6 +31,30 @@
  ******************************************************************************/
 void Filter_Init(void)
 {
+}
+/******************************************************************************
+ * @brief ID Mask calculation
+ * @param ID and Number of service
+ * @return None
+ ******************************************************************************/
+void Filter_IDMaskCalculation(uint16_t service_id, uint16_t service_number)
+{
+    // 4096 bit address 512 byte possible
+    // Create a mask of only possibility in the node
+    //--------------------------->|__________|
+    //	Shift byte		            byte Mask of bit address
+
+    LUOS_ASSERT(service_id > 0);
+    LUOS_ASSERT(service_id <= 4096 - MAX_SERVICE_NUMBER);
+    uint16_t tempo  = 0;
+    ctx.IDShiftMask = (service_id - 1) / 8; // aligned to byte
+
+    // create a mask of bit corresponding to ID number in the node
+    for (uint16_t i = 0; i < service_number; i++)
+    {
+        tempo = (((service_id - 1) + i) - (8 * ctx.IDShiftMask));
+        ctx.IDMask[tempo / 8] |= 1 << ((tempo) % 8);
+    }
 }
 /******************************************************************************
  * @brief Parse msg to find a service concerne

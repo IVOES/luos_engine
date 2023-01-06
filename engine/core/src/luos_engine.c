@@ -13,6 +13,7 @@
 #include "bootloader_core.h"
 #include "_timestamp.h"
 
+#include <filter.h>
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -284,7 +285,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                                 index++;
                             }
                         }
-                        Robus_IDMaskCalculation(1, service_number);
+                        Filter_IDMaskCalculation(1, service_number);
                     }
                     else
                     {
@@ -293,7 +294,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
                         {
                             service_table[i].ll_service->id = base_id + i;
                         }
-                        Robus_IDMaskCalculation(base_id, service_number);
+                        Filter_IDMaskCalculation(base_id, service_number);
                     }
                 case 0:
                     // send back a local routing table
@@ -1183,7 +1184,7 @@ void Luos_SetID(service_t *service, uint16_t id)
     // set id
     service->ll_service->id = 1;
     // change filter mask
-    Robus_IDMaskCalculation(id, service_number);
+    Filter_IDMaskCalculation(id, service_number);
 }
 /******************************************************************************
  * @brief Demand a detection
