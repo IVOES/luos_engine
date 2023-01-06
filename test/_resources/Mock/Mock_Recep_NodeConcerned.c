@@ -1,6 +1,6 @@
 /******************************************************************************
- * @file Mock_Recep_NodeConcerned.c
- * @brief Mock function Recep_NodeConcerned()
+ * @file Filter_MsgConcerned.c
+ * @brief Mock function Filter_MsgConcerned()
  * @author Luos
  * @version 1.0.0
  ******************************************************************************/
@@ -10,11 +10,11 @@
  * Function
  ******************************************************************************/
 /******************************************************************************
- * @brief Mock : Redefine function Recep_NodeConcerned
+ * @brief Mock : Redefine function Filter_MsgConcerned
  * @param header of message
  * @return Always returns LOCALHOST
  ******************************************************************************/
-luos_localhost_t Recep_NodeConcerned(header_t *header)
+luos_localhost_t Filter_MsgConcerned(header_t *header)
 {
     // Right now, Mock is unable to emulate external Nodes.
     // So context is initialized to "localhost" to launch a detection without any trouble.

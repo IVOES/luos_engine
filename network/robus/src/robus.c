@@ -18,6 +18,8 @@
 #include "msg_alloc.h"
 #include "luos_utils.h"
 #include "timestamp.h"
+
+#include <filter.h>
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -220,7 +222,7 @@ error_return_t Robus_SetTxTask(ll_service_t *ll_service, msg_t *msg)
     crc_val = ll_crc_compute(&msg->stream[0], crc_max_index - CRC_SIZE, 0xFFFF);
 
     // Check the localhost situation
-    luos_localhost_t localhost = Recep_NodeConcerned(&msg->header);
+    luos_localhost_t localhost = Filter_MsgConcerned(&msg->header);
     // Check if ACK needed
     if (((msg->header.target_mode == SERVICEIDACK) || (msg->header.target_mode == NODEIDACK)) && ((localhost && (msg->header.target != DEFAULTID)) || (ctx.verbose == MULTIHOST)))
     {

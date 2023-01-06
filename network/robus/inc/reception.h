@@ -55,7 +55,6 @@ void Recep_EndMsg(void);
 void Recep_Reset(void);
 void Recep_Timeout(void);
 void Recep_InterpretMsgProtocol(msg_t *msg);
-luos_localhost_t Recep_NodeConcerned(header_t *header);
 ll_service_t *Recep_GetConcernedLLService(header_t *header);
 
 #endif /* _RECEPTION_H_ */
