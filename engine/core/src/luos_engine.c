@@ -1065,7 +1065,7 @@ bool Luos_IsNodeDetected(void)
  ******************************************************************************/
 void Luos_SetFilterState(uint8_t state, service_t *service)
 {
-    Robus_SetFilterState(state, service->ll_service);
+    Filter_SetFilterState(state, service->ll_service);
 }
 /******************************************************************************
  * @brief Function that changes the verbose mode

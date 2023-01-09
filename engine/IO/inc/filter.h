@@ -25,6 +25,7 @@
 void Filter_Init(void);
 void Filter_IDMaskInit(void);
 void Filter_TopicMaskInit(void);
+void Filter_SetFilterState(uint8_t state, ll_service_t *service);
 luos_localhost_t Filter_MsgConcerned(header_t *header);
 error_return_t Filter_ServiceIDCompare(uint16_t service_id);
 error_return_t Filter_TopicCompare(uint16_t topic_id);

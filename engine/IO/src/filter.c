@@ -58,6 +58,17 @@ void Filter_TopicMaskInit(void)
         ctx.TopicMask[i] = 0;
     }
 }
+
+/******************************************************************************
+ * @brief Function that changes the filter value
+ * @param uint8_t value, 1 if we want to disable, 0 to enable
+ * @return None
+ ******************************************************************************/
+void Filter_SetFilterState(uint8_t state, ll_service_t *service)
+{
+    ctx.filter_state = state;
+    ctx.filter_id    = service->id;
+}
 /******************************************************************************
  * @brief ID Mask calculation
  * @param ID and Number of service
