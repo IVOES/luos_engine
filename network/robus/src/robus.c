@@ -43,6 +43,10 @@ static error_return_t Robus_MsgHandler(msg_t *input);
 static error_return_t Robus_DetectNextNodes(ll_service_t *ll_service);
 static error_return_t Robus_ResetNetworkDetection(ll_service_t *ll_service);
 static void Robus_RunNetworkTimeout(void);
+static inline uint16_t Robus_CtxIndexFromID(uint16_t id);
+static inline void Robus_DoubleAlloc(msg_t *msg);
+static inline ll_service_t *Robus_GetConcernedLLService(header_t *header);
+static inline void Robus_InterpretMsgProtocol(msg_t *msg);
 /*******************************************************************************
  * Variables
  ******************************************************************************/
@@ -122,7 +126,7 @@ void Robus_Loop(void)
         if (Robus_MsgHandler(msg) == FAILED)
         {
             // If not create luos tasks.
-            Recep_InterpretMsgProtocol(msg);
+            Robus_InterpretMsgProtocol(msg);
         }
     }
 }
@@ -407,7 +411,7 @@ static error_return_t Robus_MsgHandler(msg_t *input)
     uint32_t baudrate;
     msg_t output_msg;
     node_bootstrap_t node_bootstrap;
-    ll_service_t *ll_service = Recep_GetConcernedLLService(&input->header);
+    ll_service_t *ll_service = Robus_GetConcernedLLService(&input->header);
     switch (input->header.cmd)
     {
         case WRITE_NODE_ID:
@@ -490,6 +494,183 @@ static error_return_t Robus_MsgHandler(msg_t *input)
 node_t *Robus_GetNode(void)
 {
     return (node_t *)&ctx.node;
+}
+/******************************************************************************
+ * @brief Parse msg to find a service concerned
+ * @param header of message
+ * @return ll_service pointer
+ ******************************************************************************/
+ll_service_t *Robus_GetConcernedLLService(header_t *header)
+{
+    uint16_t i = 0;
+    // Find if we are concerned by this message.
+    switch (header->target_mode)
+    {
+        case SERVICEIDACK:
+        case SERVICEID:
+            // Check all ll_service id
+            for (i = 0; i < ctx.ll_service_number; i++)
+            {
+                if (header->target == ctx.ll_service_table[i].id)
+                {
+                    return (ll_service_t *)&ctx.ll_service_table[i];
+                }
+            }
+            break;
+        case TYPE:
+            // Check all ll_service type
+            for (i = 0; i < ctx.ll_service_number; i++)
+            {
+                if (header->target == ctx.ll_service_table[i].type)
+                {
+                    return (ll_service_t *)&ctx.ll_service_table[i];
+                }
+            }
+            break;
+        case BROADCAST:
+        case NODEIDACK:
+        case NODEID:
+            return (ll_service_t *)&ctx.ll_service_table[0];
+            break;
+        case TOPIC:
+        default:
+            return NULL;
+            break;
+    }
+    return NULL;
+}
+/******************************************************************************
+ * @brief Double Allocate msg_task in case of desactivated filter
+ * @param msg pointer
+ * @return None
+ ******************************************************************************/
+static inline void Robus_DoubleAlloc(msg_t *msg)
+{
+    // if there is a service that deactivated the filter we also allocate a message for it
+    if (ctx.filter_state == false)
+    {
+        // find the position of this service in the node
+        uint16_t idx = Robus_CtxIndexFromID(ctx.filter_id);
+        // check if it is message for the same service that demanded the filter desactivation
+        switch (msg->header.target_mode)
+        {
+            case (SERVICEID):
+                if (ctx.filter_id != msg->header.target)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            case (TYPE):
+                if (ctx.ll_service_table[idx].type != msg->header.target)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            case (TOPIC):
+                if (Topic_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[idx], msg->header.target) == false)
+                {
+                    // store the message if it is not so that we dont have double messages in memory
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[idx], msg);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+/******************************************************************************
+ * @brief Parse msg to find all services concerned and create
+ * @param msg pointer
+ * @return None
+ ******************************************************************************/
+void Robus_InterpretMsgProtocol(msg_t *msg)
+{
+    uint16_t i = 0;
+
+    // Find if we are concerned by this message.
+    switch (msg->header.target_mode)
+    {
+        case SERVICEIDACK:
+        case SERVICEID:
+            // Check all ll_service id
+            for (i = 0; i < ctx.ll_service_number; i++)
+            {
+                if (msg->header.target == ctx.ll_service_table[i].id)
+                {
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
+                    break;
+                }
+            }
+            // check if we need to double allocate msg_task
+            Robus_DoubleAlloc(msg);
+            return;
+            break;
+        case TYPE:
+            // Check all ll_service type
+            for (i = 0; i < ctx.ll_service_number; i++)
+            {
+                if (msg->header.target == ctx.ll_service_table[i].type)
+                {
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
+                }
+            }
+            // check if we need to double allocate msg_task
+            Robus_DoubleAlloc(msg);
+            return;
+            break;
+        case BROADCAST:
+            for (i = 0; i < ctx.ll_service_number; i++)
+            {
+                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
+            }
+            return;
+            break;
+        case TOPIC:
+            for (i = 0; i < ctx.ll_service_number; i++)
+            {
+                if (Topic_IsTopicSubscribed((ll_service_t *)&ctx.ll_service_table[i], msg->header.target))
+                {
+                    // TODO manage multiple slave concerned
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
+                }
+            }
+            // check if we need to double allocate msg_task
+            Robus_DoubleAlloc(msg);
+            return;
+            break;
+        case NODEIDACK:
+        case NODEID:
+            if (msg->header.target == DEFAULTID) // on default ID it's always a luos command create only one task
+            {
+                MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[0], msg);
+                return;
+            }
+            // check if the message is really for the node or it is a service that has no filter
+            if (msg->header.target == ctx.node.node_id)
+            {
+                for (i = 0; i < ctx.ll_service_number; i++)
+                {
+                    MsgAlloc_LuosTaskAlloc((ll_service_t *)&ctx.ll_service_table[i], msg);
+                }
+            }
+            // check if we need to double allocate msg_task
+            Robus_DoubleAlloc(msg);
+            return;
+            break;
+        default:
+            break;
+    }
+}
+/******************************************************************************
+ * @brief returns the index in context table from the service id
+ * @param id
+ * @return index
+ ******************************************************************************/
+static inline uint16_t Robus_CtxIndexFromID(uint16_t id)
+{
+    return (id - ctx.ll_service_table[0].id);
 }
 /******************************************************************************
  * @brief set node_connected variable

@@ -54,7 +54,5 @@ void Recep_Init(void);
 void Recep_EndMsg(void);
 void Recep_Reset(void);
 void Recep_Timeout(void);
-void Recep_InterpretMsgProtocol(msg_t *msg);
-ll_service_t *Recep_GetConcernedLLService(header_t *header);
 
 #endif /* _RECEPTION_H_ */
