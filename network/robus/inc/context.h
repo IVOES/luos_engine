@@ -8,6 +8,7 @@
 #define _CONTEXT_H_
 
 #include <robus.h>
+#include <luos_engine.h>
 #include "robus_config.h"
 #include "port_manager.h"
 #include "reception.h"

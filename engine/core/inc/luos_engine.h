@@ -17,6 +17,16 @@
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
+typedef enum
+{
+    NO_DETECTION,
+    DETECTION_OK,
+    LOCAL_DETECTION,
+    EXTERNAL_DETECTION,
+} network_state_t;
+
+#define NETWORK_TIMEOUT 3000 // timeout to detect a failed detection
+
 // Initialise package with a macro
 #define LUOS_ADD_PACKAGE(_name) \
     Luos_AddPackage(_name##_Init, _name##_Loop);
@@ -93,6 +103,8 @@ uint32_t Luos_GetSystick(void);
 error_return_t Luos_TxComplete(void);
 void Luos_ResetStatistic(void);
 bool Luos_IsNodeDetected(void);
+network_state_t Luos_NodeDetectedState(void);
+void Luos_SetNodeDetected(network_state_t);
 void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
 void Luos_SetVerboseMode(uint8_t mode);
 void Luos_SetFilterState(uint8_t state, service_t *service);

@@ -14,6 +14,7 @@
 #include "_timestamp.h"
 
 #include <filter.h>
+#include "context.h"
 /*******************************************************************************
  * Definitions
  ******************************************************************************/
@@ -50,6 +51,7 @@ static error_return_t Luos_IsALuosCmd(service_t *service, uint8_t cmd, uint16_t 
 static inline void Luos_EmptyNode(void);
 static inline void Luos_PackageInit(void);
 static inline void Luos_PackageLoop(void);
+static void Luos_RunNetworkTimeout(void);
 
 /******************************************************************************
  * @brief Luos init must be call in project init
@@ -109,6 +111,8 @@ void Luos_Loop(void)
         // Reset the data reception context
         Luos_ReceiveData(NULL, NULL, NULL);
     }
+    // Network timeout management
+    Luos_RunNetworkTimeout();
     Robus_Loop();
     // look at all received messages
     while (MsgAlloc_LookAtLuosTask(remaining_msg_number, &oldest_ll_service) != FAILED)
@@ -347,7 +351,7 @@ static error_return_t Luos_MsgHandler(service_t *service, msg_t *input)
         case ASK_DETECTION:
             if (input->header.size == 0)
             {
-                if (Robus_IsNodeDetected() < LOCAL_DETECTION)
+                if (Luos_NodeDetectedState() < LOCAL_DETECTION)
                 {
                     RoutingTB_DetectServices(detection_service);
                 }
@@ -498,7 +502,7 @@ static void Luos_AutoUpdateManager(void)
                     }
                     else
                     {
-                        if (Robus_IsNodeDetected() == DETECTION_OK)
+                        if (Luos_NodeDetectedState() == DETECTION_OK)
                         {
                             // directly transmit the message in Localhost
                             Robus_SetTxTask(service_table[i].ll_service, &updt_msg);
@@ -1047,7 +1051,7 @@ void Luos_ResetStatistic(void)
  ******************************************************************************/
 bool Luos_IsNodeDetected(void)
 {
-    if (Robus_IsNodeDetected() == DETECTION_OK)
+    if (Luos_NodeDetectedState() == DETECTION_OK)
     {
         return true;
     }
@@ -1056,7 +1060,59 @@ bool Luos_IsNodeDetected(void)
         return false;
     }
 }
-
+/******************************************************************************
+ * @brief Check if the node is connected to the network
+ * @param None
+ * @return TRUE if the node is connected to the network
+ ******************************************************************************/
+network_state_t Luos_NodeDetectedState(void)
+{
+        return ctx.node_connected.state ;
+}
+/******************************************************************************
+ * @brief set node_connected variable
+ * @param state
+ * @return None
+ * _CRITICAL function call in IRQ
+ ******************************************************************************/
+_CRITICAL inline void Luos_SetNodeDetected(network_state_t state)
+{
+    switch (state)
+    {
+        case NO_DETECTION:
+            ctx.node_connected.timeout_run = false;
+            ctx.node_connected.timeout     = 0;
+            break;
+        case LOCAL_DETECTION:
+        case EXTERNAL_DETECTION:
+            ctx.node_connected.timeout_run = true;
+            ctx.node_connected.timeout     = LuosHAL_GetSystick();
+            break;
+        case DETECTION_OK:
+            ctx.node_connected.timeout_run = false;
+            ctx.node_connected.timeout     = 0;
+            break;
+        default:
+            break;
+    }
+    ctx.node_connected.state = state;
+}
+/******************************************************************************
+ * @brief manage network timeout
+ * @param None
+ * @return None
+ ******************************************************************************/
+void Luos_RunNetworkTimeout(void)
+{
+    if (ctx.node_connected.timeout_run)
+    {
+        // if timeout is reached, go back to link-down state
+        if (LuosHAL_GetSystick() - ctx.node_connected.timeout > NETWORK_TIMEOUT)
+        {
+            Luos_SetNodeDetected(NO_DETECTION);
+        }
+    }
+}
 /******************************************************************************
  * @brief Function that changes the filter value
  * @param state : Put to "1" if we want to disable the filter , "0" to enable
@@ -1195,7 +1251,7 @@ void Luos_Detect(service_t *service)
 {
     msg_t detect_msg;
 
-    if (Robus_IsNodeDetected() < LOCAL_DETECTION)
+    if (Luos_NodeDetectedState() < LOCAL_DETECTION)
     {
         // set the detection launcher id to 1
         Luos_SetID(service, 1);
