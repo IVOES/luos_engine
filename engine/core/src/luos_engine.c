@@ -522,7 +522,34 @@ static void Luos_AutoUpdateManager(void)
 void Luos_ServicesClear(void)
 {
     service_number = 0;
-    Robus_ServicesClear();
+    // Clear ll_service table
+    memset((void *)ctx.ll_service_table, 0, sizeof(ll_service_t) * MAX_SERVICE_NUMBER);
+    // Reset the number of created services
+    ctx.ll_service_number = 0;
+}
+/******************************************************************************
+ * @brief create a service add in local route table
+ * @param type of service create
+ * @return None
+ ******************************************************************************/
+ll_service_t *Luos_AddServices(uint16_t type)
+{
+    // Set the service type
+    ctx.ll_service_table[ctx.ll_service_number].type = type;
+    // Initialise the service id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
+    ctx.ll_service_table[ctx.ll_service_number].id = DEFAULTID;
+    // Initialize dead service detection
+    ctx.ll_service_table[ctx.ll_service_number].dead_service_spotted = 0;
+    // Clear stats
+    ctx.ll_service_table[ctx.ll_service_number].ll_stat.max_retry = 0;
+    // Clear topic number
+    ctx.ll_service_table[ctx.ll_service_number].last_topic_position = 0;
+    for (uint16_t i = 0; i < LAST_TOPIC; i++)
+    {
+        ctx.ll_service_table[ctx.ll_service_number].topic_list[i] = 0;
+    }
+    // Return the freshly initialized ll_service pointer.
+    return (ll_service_t *)&ctx.ll_service_table[ctx.ll_service_number++];
 }
 /******************************************************************************
  * @brief API to Create a service
@@ -536,7 +563,7 @@ service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *a
 {
     uint8_t i           = 0;
     service_t *service  = &service_table[service_number];
-    service->ll_service = Robus_ServiceCreate(type);
+    service->ll_service = Luos_AddServices(type);
 
     // Link the service to his callback
     service->service_cb = service_cb;

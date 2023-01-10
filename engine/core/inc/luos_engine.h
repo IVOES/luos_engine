@@ -75,6 +75,7 @@ void Luos_AddPackage(void (*Init)(void), void (*Loop)(void));
 void Luos_Run(void);
 
 // ***************** Service management *****************
+ll_service_t *Luos_AddServices(uint16_t type);
 service_t *Luos_CreateService(SERVICE_CB service_cb, uint8_t type, const char *alias, revision_t revision);
 error_return_t Luos_UpdateAlias(service_t *service, const char *alias, uint16_t size);
 void Luos_Detect(service_t *service);

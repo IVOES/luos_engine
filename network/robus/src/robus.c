@@ -126,42 +126,6 @@ void Robus_Loop(void)
     }
 }
 /******************************************************************************
- * @brief create a service add in local route table
- * @param type of service create
- * @return None
- ******************************************************************************/
-ll_service_t *Robus_ServiceCreate(uint16_t type)
-{
-    // Set the service type
-    ctx.ll_service_table[ctx.ll_service_number].type = type;
-    // Initialise the service id, TODO the ID could be stored in EEprom, the default ID could be set in factory...
-    ctx.ll_service_table[ctx.ll_service_number].id = DEFAULTID;
-    // Initialize dead service detection
-    ctx.ll_service_table[ctx.ll_service_number].dead_service_spotted = 0;
-    // Clear stats
-    ctx.ll_service_table[ctx.ll_service_number].ll_stat.max_retry = 0;
-    // Clear topic number
-    ctx.ll_service_table[ctx.ll_service_number].last_topic_position = 0;
-    for (uint16_t i = 0; i < LAST_TOPIC; i++)
-    {
-        ctx.ll_service_table[ctx.ll_service_number].topic_list[i] = 0;
-    }
-    // Return the freshly initialized ll_service pointer.
-    return (ll_service_t *)&ctx.ll_service_table[ctx.ll_service_number++];
-}
-/******************************************************************************
- * @brief clear service list in route table
- * @param None
- * @return None
- ******************************************************************************/
-void Robus_ServicesClear(void)
-{
-    // Clear ll_service table
-    memset((void *)ctx.ll_service_table, 0, sizeof(ll_service_t) * MAX_SERVICE_NUMBER);
-    // Reset the number of created services
-    ctx.ll_service_number = 0;
-}
-/******************************************************************************
  * @brief Formalize message Set tx task and send
  * @param service to send
  * @param msg to send
